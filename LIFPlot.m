@@ -5,28 +5,28 @@ clear;
 
 % Constants %%%%%%%%%%%%%%%%%%%%%%%%%
 % Plot Settings
-TMAX = 120;
-TIMESTEP = 0.1;
-COLOURS = {'#0072BD', '#D95319', '#EDB120', '#7E2F8E', '#77AC30', '#4DBEEE', '#A2142F'};
-MARKER = 'o';
+TMAX                = 120;
+TIMESTEP            = 0.1;
+COLOURS             = {'#0072BD', '#D95319', '#EDB120', '#7E2F8E', '#77AC30', '#4DBEEE', '#A2142F'};
+MARKER              = 'o';
 
 % Neuron Properties (to use defaults, define the layers without these settings).
-REFRACTORY_PERIOD       = 50;   % Period the neuron cannot fire another spike.
-V_THRESHOLD             = 20;   % Spiking threshold.
-V_INFINITY              = 25;   % Upper bound on neuron voltage.
-V_RESET                 = 0;  % Offset. Unused in calculations (to simplify things), but included because neurons normally operate around -70mV.
+REFRACTORY_PERIOD   =  50;   % Period the neuron cannot fire another spike.
+V_THRESHOLD         =  20;   % Spiking threshold.
+V_INFINITY          =  25;   % Upper bound on neuron voltage.
+V_RESET             = -70;  % Offset. Unused in calculations (to simplify things), but included because neurons normally operate around -70mV.
 
 % Layer Properties
-INPUT_NEURONS           = 1;
-OUTPUT_NEURONS          = 1;
-HIDDEN_NEURONS          = 3;
-HIDDEN_LAYERS           = 3;
+INPUT_NEURONS       = 1;
+OUTPUT_NEURONS      = 1;
+HIDDEN_NEURONS      = 3;
+HIDDEN_LAYERS       = 3;
 
 % Variables %%%%%%%%%%%%%%%%%%%%%%%%%
 % This is the value given to the input neurons. It can be a vector, in
 % which case it is divided among the input neurons. If it's a scalar then
 % all neurons will recieve the same value.
-inputSignal                  = 0; % 
+inputSignal             = 0; % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 signalArrow = animatedline('Color', 'r', 'Marker', '<', 'MarkerFaceColor', 'r', MaximumNumPoints=1);
@@ -72,7 +72,8 @@ axis([0 TMAX (inputLayer.V_RESET-padding) (inputLayer.V_INFINITY+padding)]);
 yline(inputLayer.V_THRESHOLD, '--', 'V_{th}');
 yline(inputLayer.V_INFINITY, '--', 'V_\infty');
 yline(inputLayer.V_RESET, '--', 'V_{reset}');
-
+xline(0, '-');
+xline(TMAX, '-');
 screen = get(0,'ScreenSize');
 set(gcf, 'Position', [floor(screen(3)/4), floor(screen(4)/3), 900, 500], 'Name', 'INFO48874 - Spiking Neuron Simulation');
 
