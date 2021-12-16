@@ -11,40 +11,48 @@ classdef LIFNeuron < handle
         % Variables %%%%%%%%%%%%%%%%%
         Voltage{}
         Refractory{}    % Time neuron went refractory
+        InputStrengths{}
     end
     methods
         % Initialization
         function neuron = LIFNeuron(v_threshold, v_reset, v_infinity, refractory)
             % Constants
             if ~exist('refractory', 'var')
-                refractory = 10;                    %ms
+                refractory = 10;                    % ms
             end
-            neuron.REFRACTORY_PERIOD = refractory;  %ms
+            neuron.REFRACTORY_PERIOD = refractory;  % ms
             
             if ~exist('v_reset', 'var')
-                v_reset = 0;                        %mV
+                v_reset = 0;                        % mV
             end
-            neuron.V_RESET  = v_reset;              %mV
+            neuron.V_RESET  = v_reset;              % mV
             
             if ~exist('v_infinity', 'var')
-                v_infinity = v_threshold+1;         %mV
+                v_infinity = v_threshold+1;         % mV
             end
-            neuron.V_INFINITY = v_infinity;         %mV
+            neuron.V_INFINITY = v_infinity;         % mV
             
             if ~exist('v_threshold', 'var')
-                v_threshold = 50;                   %mV
+                v_threshold = 50;                   % mV
             end
-            neuron.V_THRESHOLD    = v_threshold;    %mV
+            neuron.V_THRESHOLD    = v_threshold;    % mV
             
             % Variables
-            neuron.Voltage      = 0;                %mV
-            neuron.Refractory   = 0;                %ms
+            neuron.Voltage          = 0;            % mV
+            neuron.Refractory       = 0;            % ms
+            neuron.InputStrengths   = [1];          % Vector with range [0,1]
         end
         
         function output = integrate(neuron, inputs)
             if ~exist('inputs', 'var')
                 inputs = 0;
             end
+            
+            if length(neuron.InputStrengths) ~= length(inputs)
+                neuron.InputStrengths = ones(1, length(inputs))
+            end
+            
+            
             
             if neuron.Refractory > 0
                 neuron.Refractory = neuron.Refractory - 1;

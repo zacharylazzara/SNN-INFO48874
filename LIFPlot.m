@@ -11,9 +11,9 @@ COLOURS             = {'#0072BD', '#D95319', '#EDB120', '#7E2F8E', '#77AC30', '#
 MARKER              = 'o';
 
 % Neuron Properties (to use defaults, define the layers without these settings).
-REFRACTORY_PERIOD   =  50;   % Period the neuron cannot fire another spike.
-V_THRESHOLD         =  20;   % Spiking threshold.
-V_INFINITY          =  25;   % Upper bound on neuron voltage.
+REFRACTORY_PERIOD   =  50;  % Period the neuron cannot fire another spike.
+V_THRESHOLD         =  20;  % Spiking threshold.
+V_INFINITY          =  25;  % Upper bound on neuron voltage.
 V_RESET             = -70;  % Offset. Unused in calculations (to simplify things), but included because neurons normally operate around -70mV.
 
 % Layer Properties
@@ -22,16 +22,41 @@ OUTPUT_NEURONS      = 1;
 HIDDEN_NEURONS      = 3;
 HIDDEN_LAYERS       = 3;
 
-% Variables %%%%%%%%%%%%%%%%%%%%%%%%%
-% This is the value given to the input neurons. It can be a vector, in
-% which case it is divided among the input neurons. If it's a scalar then
-% all neurons will recieve the same value.
-inputSignal             = 0; % 
+% Input Signals %%%%%%%%%%%%%%%%%%%%%%%%%
+REPEATING_SIGNAL    = false;    % Determines if the signal should be repeated after ending or not.
+MAX_INPUTS          = 1;        % We could theoretically have more than one signal source. For now we'll just use one.
+TIME_RANGE          = [5, 40];  % Should always be two values
+
+% Alternatively, we can define the TIMEKEY as TIMEKEY = [0, 1, 2, 3, etc].
+% It doesn't need to be in order of time either.
+
+TIMEKEY = zeros(max(TIME_RANGE)-min(TIME_RANGE),1);
+for t=min(TIME_RANGE):max(TIME_RANGE)
+    TIMEKEY(t-min(TIME_RANGE)+1) = t;
+end
+
+% Signal generators
+SIG1_GEN = @(t) 1+sin(pi*t)/5; 
+% SIG2_GEN = @(t) 2+sin(pi*t);
+
+SIGNAL{length(TIMEKEY),1} = [];
+for i=1:length(SIGNAL) % Define when a given signal generator will be used.
+    SIGNAL{i} = SIG1_GEN;
+%     if i < 10 || i > 20
+%         SIGNAL{i} = SIG1_GEN;
+%     else
+%         SIGNAL{i} = SIG2_GEN;
+%     end
+end
+SIGNAL_MAP = containers.Map(TIMEKEY, SIGNAL);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-signalArrow = animatedline('Color', 'r', 'Marker', '<', 'MarkerFaceColor', 'r', MaximumNumPoints=1);
-signalPoint = animatedline('Color', 'r', 'Marker', MARKER, 'MarkerFaceColor', 'r', MaximumNumPoints=1);
-signalLine = animatedline('Color', 'r');
+signalArrows{MAX_INPUTS,1} = [];
+signalPoints{MAX_INPUTS,1} = [];
+signalLines{MAX_INPUTS,1} = [];
+for n=1:MAX_INPUTS
+    signalLines{n} = animatedline('Color', 'r');
+end
 
 % Input layers
 inputLayer = LIFLayer(INPUT_NEURONS, V_THRESHOLD, V_RESET, V_INFINITY, REFRACTORY_PERIOD);
@@ -78,24 +103,40 @@ screen = get(0,'ScreenSize');
 set(gcf, 'Position', [floor(screen(3)/4), floor(screen(4)/3), 900, 500], 'Name', 'INFO48874 - Spiking Neuron Simulation');
 
 % Simulation Loop
-previousText = text(0, inputSignal+V_RESET, 'Point');
+previousTexts{MAX_INPUTS,1} = [];
+for n=1:MAX_INPUTS
+    signal_generator = SIGNAL_MAP(TIMEKEY(n));
+    previousTexts{n} = text(0, signal_generator(0), '\t V_{signal-in}');
+    delete(previousTexts{n});
+end
 for time = 1:TIMESTEP:TMAX
-    % TODO: use a poisson process for the inputs
-    if time > 5
-        inputSignal = 1+sin(pi*time)/5;
+    % Input Signals
+    timekey = time;
+    if ~isKey(SIGNAL_MAP, timekey)
+        timekey = floor(time);
     end
-    if time > 50
+    if REPEATING_SIGNAL % If false the following line will give a warning in MATLAB, but you can ignore it.
+        timekey = TIMEKEY(mod(timekey, length(SIGNAL_MAP))+1);
+    end
+    if isKey(SIGNAL_MAP, timekey)
+        signal_generator = SIGNAL_MAP(timekey);
+        inputSignal = signal_generator(time);
+    else
         inputSignal = 0;
     end
     
-    % Sensor Input
+    % Plot Sensor Inputs
     offsetSignal = inputSignal+V_RESET;
-    addpoints(signalArrow, TMAX, offsetSignal);
-    addpoints(signalPoint, time, offsetSignal);
-    addpoints(signalLine, time, offsetSignal);
-    delete(previousText);
-    previousText = text(TMAX, offsetSignal, sprintf('\t V_{input} = %.2f',offsetSignal));
+    for n=1:length(offsetSignal)
+        signalArrows{n} = animatedline('Color', 'r', 'Marker', '<', 'MarkerFaceColor', 'r', MaximumNumPoints=1);
+        signalPoints{n} = animatedline('Color', 'r', 'Marker', MARKER, 'MarkerFaceColor', 'r', MaximumNumPoints=1);
+        addpoints(signalArrows{n}, TMAX, offsetSignal(n));
+        addpoints(signalPoints{n}, time, offsetSignal(n));
+        addpoints(signalLines{n}, time, offsetSignal(n));
+        previousTexts{n} = text(TMAX, offsetSignal(n), sprintf('\t V_{signal-in} = %.2f',offsetSignal(n)));
+    end
     
+    % Main Simulation %%%%%%%%%%%%%%%%%%%%%%%%%
     % Input Layer
     inputLayer.integrate(inputSignal);
     for n=1:inputLayer.SIZE
@@ -122,7 +163,16 @@ for time = 1:TIMESTEP:TMAX
         addpoints(outputPoints{n}, time, outputLayer.Outputs(n));
         addpoints(outputLines{n}, time, outputLayer.Outputs(n));
     end
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     pause(.01);
     drawnow limitrate;
+    
+    % Signal Plot Cleanup
+    for n=1:length(offsetSignal)
+        delete(signalArrows{n});
+        delete(signalPoints{n});
+        delete(previousTexts{n});
+        signalPoints{n} = animatedline('Color', 'r', 'Marker', 'x', 'MarkerFaceColor', 'r', MaximumNumPoints=1);
+    end
 end
