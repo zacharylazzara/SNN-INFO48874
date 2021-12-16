@@ -13,7 +13,7 @@ COLOURS = {'#0072BD', '#D95319', '#EDB120', '#7E2F8E', '#77AC30', '#4DBEEE', '#A
 REFRACTORY_PERIOD       = 50;   % Period the neuron cannot fire another spike.
 V_THRESHOLD             = 20;   % Spiking threshold.
 V_INFINITY              = 25;   % Upper bound on neuron voltage.
-V_RESET                 = -70;  % Offset. Unused in calculations (to simplify things), but included because neurons normally operate around -70mV.
+V_RESET                 = 0;  % Offset. Unused in calculations (to simplify things), but included because neurons normally operate around -70mV.
 
 % Layer Properties
 INPUT_NEURONS           = 1;
@@ -28,6 +28,7 @@ HIDDEN_LAYERS           = 3;
 inputSignal                  = 0; % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+signalPoint = animatedline('Color', 'r', 'Marker', 'o', MaximumNumPoints=1);
 signalLine = animatedline('Color', 'r');
 
 % Input layers
@@ -65,6 +66,7 @@ yline(inputLayer.V_INFINITY, '--', 'V_\infty');
 yline(inputLayer.V_RESET, '--', 'V_{reset}');
 
 % Simulation Loop
+previousText = text(0, inputSignal+V_RESET, 'Point');
 for time = 1:TIMESTEP:TMAX
     % TODO: use a poisson process for the inputs
     if time > 5
@@ -75,7 +77,11 @@ for time = 1:TIMESTEP:TMAX
     end
     
     % Sensor Input
-    addpoints(signalLine, time, inputSignal+V_RESET);
+    offsetSignal = inputSignal+V_RESET;
+    addpoints(signalPoint, time, offsetSignal);
+    addpoints(signalLine, time, offsetSignal);
+    delete(previousText);
+    previousText = text(time, offsetSignal, sprintf('\t V_{input} = %.2f',offsetSignal));
     
     % Input Layer
     inputLayer.integrate(inputSignal);
@@ -104,3 +110,4 @@ for time = 1:TIMESTEP:TMAX
     pause(.01);
     drawnow limitrate;
 end
+delete(previousText);
