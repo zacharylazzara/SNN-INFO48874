@@ -1,16 +1,14 @@
 % Written by Zachary Lazzara
 
-% This is used to create layers of spiking neurons.
-
 classdef LIFLayer < handle
     properties
-        SIZE{}
+        SIZE{}              % Number of neurons in the layer
         V_RESET{}           % Resting potential
         V_INFINITY{}        % Voltage approaches this value but never reaches it
         V_THRESHOLD{}       % Voltage reset threshold
         REFRACTORY_PERIOD{} % How long the neuron's refractory period in ms is
-        Neurons{}
-        Outputs{}
+        Neurons{}           % Neuron cell array
+        Outputs{}           % Output vector
     end
     methods
         % Initialization
@@ -60,7 +58,6 @@ classdef LIFLayer < handle
             for i=1:layer.SIZE
                 layer.Outputs(i) = layer.Neurons{i}.v_data(1, inputs(mod(i, length(inputs))+1));
             end
-            
             outputs = layer.Outputs;
         end
     end

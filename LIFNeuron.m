@@ -1,3 +1,5 @@
+% Written by Zachary Lazzara
+
 classdef LIFNeuron < handle
     properties
         % Constants %%%%%%%%%%%%%%%%%

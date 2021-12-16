@@ -16,8 +16,8 @@ RESET = 0;
 % Layer Properties
 INPUT_NEURONS = 1;
 OUTPUT_NEURONS = 1;
-HIDDEN_LAYERS = 3;
-HIDDEN_LAYER_NEURONS = 3;
+HIDDEN_LAYERS = 2;
+HIDDEN_LAYER_NEURONS = 1;
 % Variables %%%%%%%%%%%%%%%%%%%%%%%%%
 amps = 0;%[[0.01, 0.3, 0.02], [0.1, 0.8]];% TODO: I think it's amperage we should be inputting, not voltage?
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -44,6 +44,7 @@ outputLayer = LIFLayer(OUTPUT_NEURONS, THRESHOLD, RESET);
 outputLines{OUTPUT_NEURONS,1} = [];
 for n=1:OUTPUT_NEURONS
     outputLines{n} = animatedline('Color', COLOURS{mod(n, length(COLOURS))+1});
+%     set(outputLines{n}, 'LineWidth', 1.5); % Make them easier to see over hidden layers
 end
 
 % Plot
@@ -58,18 +59,18 @@ yline(inputLayer.V_RESET, '--', 'V_{reset}');
 
 % Simulation Loop
 for time = 1:TIMESTEP:TMAX
-    % TODO: use a poisson process for the inputs
     if time > 5
-        amps = 1+sin(pi*time)/5;
+%         amps = 2;
+        amps = 0.001;%1+sin(pi*time)/5;
     end
     if time > 50
         amps = 0;
     end
     
+    
     % Input Layer
-    inputLayer.integrate(amps);
     for n=1:inputLayer.SIZE
-        addpoints(inputLines{n}, time, inputLayer.Outputs(n));
+        addpoints(inputLines{n}, time, inputLayer.integrate(amps));
     end
     
     % Hidden Layers
@@ -77,18 +78,21 @@ for time = 1:TIMESTEP:TMAX
     for n=1:layers{1}.SIZE
         addpoints(lines{n}, time, layers{1}.Outputs(n));
     end
-    for i=2:HIDDEN_LAYERS
-        layers{i}.integrate(layers{i-1}.Outputs);
-        for n=1:layers{i}.SIZE
-            addpoints(lines{n}, time, layers{i}.Outputs(n));
-        end
+%     for i=2:HIDDEN_LAYERS
+%         layers{i}.integrate(layers{i-1}.Outputs);
+%         for n=1:layers{i}.SIZE
+%             addpoints(lines{n}, time, layers{i}.Outputs(n));
+%         end
+%     end
+    
+    % Output Layers
+    for n=1:outputLayer.SIZE
+        addpoints(outputLines{n}, time, outputLayer.integrate(layers{end}.Outputs));
     end
     
-    % Output Layer
-    outputLayer.integrate(layers{end}.Outputs);
-    for n=1:outputLayer.SIZE
-        addpoints(outputLines{n}, time, outputLayer.Outputs(n));
-    end
+    
+
+    
     
     pause(.01);
     drawnow limitrate;
