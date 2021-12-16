@@ -5,9 +5,16 @@ clear;
 
 % Constants %%%%%%%%%%%%%%%%%%%%%%%%%
 % Plot Settings
+COLOURS =  {[0      0.4470 0.7410];
+            [0.8500 0.3250 0.0980];
+            [0.9290 0.6940 0.1250];
+            [0.4940 0.1840 0.5560];
+            [0.4660 0.6740 0.1880];
+            [0.3010 0.7450 0.9330];
+            [0.6350 0.0780 0.1840]}';
+
 TMAX                = 120;
 TIMESTEP            = 0.1;
-COLOURS             = {'#0072BD', '#D95319', '#EDB120', '#7E2F8E', '#77AC30', '#4DBEEE', '#A2142F'};
 MARKER              = 'o';
 
 % Neuron Properties (to use defaults, define the layers without these settings).
@@ -19,7 +26,7 @@ V_RESET             = -70;  % Offset. Unused in calculations (to simplify things
 % Layer Properties
 INPUT_NEURONS       = 2;
 OUTPUT_NEURONS      = 1;
-HIDDEN_NEURONS      = 1;
+HIDDEN_NEURONS      = 5;
 HIDDEN_LAYERS       = 1;
 
 % Input Signals %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -55,7 +62,7 @@ signalArrows{MAX_INPUTS,1} = [];
 signalPoints{MAX_INPUTS,1} = [];
 signalLines{MAX_INPUTS,1} = [];
 for n=1:MAX_INPUTS
-    signalLines{n} = animatedline('Color', 'k');
+    signalLines{n} = animatedline('Color', 'r');
 end
 
 % Input layers
@@ -63,8 +70,9 @@ inputLayer = LIFLayer(INPUT_NEURONS, V_THRESHOLD, V_RESET, V_INFINITY, REFRACTOR
 inputPoints{INPUT_NEURONS,1} = [];
 inputLines{INPUT_NEURONS,1} = [];
 for n=1:INPUT_NEURONS
-    inputPoints{n} = animatedline('Color', COLOURS{mod(n, length(COLOURS))+1}, 'Marker', MARKER, 'MarkerFaceColor', COLOURS{mod(n, length(COLOURS))+1}, MaximumNumPoints=1);
-    inputLines{n} = animatedline('Color', COLOURS{mod(n, length(COLOURS))+1});
+    colours = COLOURS{mod(n, length(COLOURS))+1};
+    inputPoints{n} = animatedline('Color', colours, 'Marker', MARKER, 'MarkerFaceColor', colours, MaximumNumPoints=1);
+    inputLines{n} = animatedline('Color', colours);
 end
 
 % Hidden layers
@@ -74,8 +82,9 @@ hiddenLines{HIDDEN_NEURONS*HIDDEN_LAYERS,1} = [];
 for i=1:HIDDEN_LAYERS
     hiddenLayers{i} = LIFLayer(HIDDEN_NEURONS, V_THRESHOLD, V_RESET, V_INFINITY, REFRACTORY_PERIOD);
     for n=1:HIDDEN_NEURONS
-        hiddenPoints{n} = animatedline('Color', COLOURS{mod(n, length(COLOURS))+1}, 'Marker', MARKER, 'MarkerFaceColor', COLOURS{mod(n, length(COLOURS))+1}, MaximumNumPoints=1);
-        hiddenLines{n} = animatedline('Color', COLOURS{mod(n, length(COLOURS))+1});
+        colours = COLOURS{mod(n, length(COLOURS))+1}/1.5;
+        hiddenPoints{n} = animatedline('Color', colours, 'Marker', MARKER, 'MarkerFaceColor', colours, MaximumNumPoints=1);
+        hiddenLines{n} = animatedline('Color', colours);
     end
 end
 
@@ -84,8 +93,9 @@ outputLayer = LIFLayer(OUTPUT_NEURONS, V_THRESHOLD, V_RESET, V_INFINITY, REFRACT
 outputPoints{OUTPUT_NEURONS,1} = [];
 outputLines{OUTPUT_NEURONS,1} = [];
 for n=1:OUTPUT_NEURONS
-    outputPoints{n} = animatedline('Color', COLOURS{mod(n, length(COLOURS))+1}, 'Marker', MARKER, 'MarkerFaceColor', COLOURS{mod(n, length(COLOURS))+1}, MaximumNumPoints=1);
-    outputLines{n} = animatedline('Color', COLOURS{mod(n, length(COLOURS))+1});
+    colours = COLOURS{mod(n, length(COLOURS))+1}/2;
+    outputPoints{n} = animatedline('Color', colours, 'Marker', MARKER, 'MarkerFaceColor', colours, MaximumNumPoints=1);
+    outputLines{n} = animatedline('Color', colours);
 end
 
 % Plot
@@ -147,6 +157,7 @@ for time = 1:TIMESTEP:TMAX
     % Hidden Layers
     hiddenLayers{1}.integrate(inputLayer.Outputs-V_RESET); % Subtract V_RESET here because it messes up calculations otherwise
     for n=1:hiddenLayers{1}.SIZE
+        addpoints(hiddenPoints{n}, time, hiddenLayers{1}.Outputs(n));
         addpoints(hiddenLines{n}, time, hiddenLayers{1}.Outputs(n));
     end
     for i=2:HIDDEN_LAYERS
