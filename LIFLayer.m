@@ -8,6 +8,7 @@ classdef LIFLayer < handle
         V_THRESHOLD{}       % Voltage reset threshold
         REFRACTORY_PERIOD{} % How long the neuron's refractory period in ms is
         Neurons{}           % Neuron cell array
+        SignalStrengths{}   % Signal strength for a given input to a neuron
         Outputs{}           % Output vector
     end
     methods
@@ -18,7 +19,8 @@ classdef LIFLayer < handle
             end
             layer.SIZE = neuron_count;
             layer.Outputs = [layer.SIZE];
-            layer.Neurons{layer.SIZE} = [];
+            layer.Neurons{layer.SIZE,1} = [];
+            layer.SignalStrengths{layer.SIZE,1} = [];
             
             % Create neurons
             if ~exist('refractory', 'var')
@@ -47,16 +49,20 @@ classdef LIFLayer < handle
         end
         
         function outputs = integrate(layer, inputs)
-            % TODO: integrate inputs, and divide them amongst the neurons?
-            % Neurons should be integrating, but we need to know which
-            % inputs go to what neurons. Maybe we can make a subset of
-            % inputs to divide among all neurons in the event there's more
-            % inputs than neurons? We should also be strengthening and
-            % weakening connections here (probably anyway).
-            
-            
             for i=1:layer.SIZE
-                layer.Outputs(i) = layer.Neurons{i}.v_data(1, inputs(mod(i, length(inputs))+1));
+                neuralInputs = inputs(mod(i, length(inputs))+1); % Determines how inputs are distributed amongst neurons
+                if length(layer.SignalStrengths{i}) ~= length(neuralInputs) % Only runs on initialization
+                    layer.SignalStrengths{i} = ones(1, length(neuralInputs));
+                end
+                neuralInputs = neuralInputs .* layer.SignalStrengths{i};
+                
+                if layer.Neurons{i}.Refractory > 0 % Weaken Signal
+                    layer.SignalStrengths{i} = layer.SignalStrengths{i} - (layer.SignalStrengths{i} ./ (1+neuralInputs))/layer.Neurons{i}.Refractory;
+                else % Strengthen Signal
+                    layer.SignalStrengths{i} = layer.SignalStrengths{i} .^ neuralInputs;
+                end
+                
+                layer.Outputs(i) = layer.Neurons{i}.v_data(1, neuralInputs);
             end
             outputs = layer.Outputs;
         end

@@ -10,7 +10,7 @@ classdef LIFNeuron < handle
         
         % Variables %%%%%%%%%%%%%%%%%
         Voltage{}
-        Refractory{}    % Time neuron went refractory
+        Refractory{}        % Time neuron went refractory
         InputStrengths{}
     end
     methods
@@ -40,7 +40,6 @@ classdef LIFNeuron < handle
             % Variables
             neuron.Voltage          = 0;            % mV
             neuron.Refractory       = 0;            % ms
-            neuron.InputStrengths   = [1];          % Vector with range [0,1]
         end
         
         function output = integrate(neuron, inputs)
@@ -49,10 +48,8 @@ classdef LIFNeuron < handle
             end
             
             if length(neuron.InputStrengths) ~= length(inputs)
-                neuron.InputStrengths = ones(1, length(inputs))
+                neuron.InputStrengths = ones(1, length(inputs));
             end
-            
-            
             
             if neuron.Refractory > 0
                 neuron.Refractory = neuron.Refractory - 1;
@@ -66,7 +63,7 @@ classdef LIFNeuron < handle
                neuron.Voltage = neuron.V_INFINITY-eps; % Since voltage should never reach V_INFINITY we subtract epsilon
             end
             if neuron.Voltage >= neuron.V_THRESHOLD
-                neuron.Refractory = neuron.REFRACTORY_PERIOD + 1;
+                neuron.Refractory = neuron.REFRACTORY_PERIOD;
             end
             
             output = neuron.Voltage;

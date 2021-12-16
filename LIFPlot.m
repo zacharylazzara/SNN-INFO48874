@@ -17,10 +17,10 @@ V_INFINITY          =  25;  % Upper bound on neuron voltage.
 V_RESET             = -70;  % Offset. Unused in calculations (to simplify things), but included because neurons normally operate around -70mV.
 
 % Layer Properties
-INPUT_NEURONS       = 1;
+INPUT_NEURONS       = 2;
 OUTPUT_NEURONS      = 1;
-HIDDEN_NEURONS      = 3;
-HIDDEN_LAYERS       = 3;
+HIDDEN_NEURONS      = 1;
+HIDDEN_LAYERS       = 1;
 
 % Input Signals %%%%%%%%%%%%%%%%%%%%%%%%%
 REPEATING_SIGNAL    = false;    % Determines if the signal should be repeated after ending or not.
@@ -55,7 +55,7 @@ signalArrows{MAX_INPUTS,1} = [];
 signalPoints{MAX_INPUTS,1} = [];
 signalLines{MAX_INPUTS,1} = [];
 for n=1:MAX_INPUTS
-    signalLines{n} = animatedline('Color', 'r');
+    signalLines{n} = animatedline('Color', 'k');
 end
 
 % Input layers
