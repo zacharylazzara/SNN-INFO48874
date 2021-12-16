@@ -65,12 +65,15 @@ for n=1:MAX_INPUTS
     signalLines{n} = animatedline('Color', 'r');
 end
 
+colourOffset = 1;
+neuronColours = @(neuronOffset, layerOffset) COLOURS{mod(neuronOffset, length(COLOURS))+1}/layerOffset;
+
 % Input layers
 inputLayer = LIFLayer(INPUT_NEURONS, V_THRESHOLD, V_RESET, V_INFINITY, REFRACTORY_PERIOD);
 inputPoints{INPUT_NEURONS,1} = [];
 inputLines{INPUT_NEURONS,1} = [];
 for n=1:INPUT_NEURONS
-    colours = COLOURS{mod(n, length(COLOURS))+1};
+    colours = neuronColours(n, colourOffset);
     inputPoints{n} = animatedline('Color', colours, 'Marker', MARKER, 'MarkerFaceColor', colours, MaximumNumPoints=1);
     inputLines{n} = animatedline('Color', colours);
 end
@@ -80,9 +83,10 @@ hiddenLayers{HIDDEN_LAYERS,1} = [];
 hiddenPoints{HIDDEN_NEURONS*HIDDEN_LAYERS,1} = [];
 hiddenLines{HIDDEN_NEURONS*HIDDEN_LAYERS,1} = [];
 for i=1:HIDDEN_LAYERS
+    colourOffset = colourOffset + 0.5;
     hiddenLayers{i} = LIFLayer(HIDDEN_NEURONS, V_THRESHOLD, V_RESET, V_INFINITY, REFRACTORY_PERIOD);
     for n=1:HIDDEN_NEURONS
-        colours = COLOURS{mod(n, length(COLOURS))+1}/1.5;
+        colours = neuronColours(n, colourOffset);
         hiddenPoints{n} = animatedline('Color', colours, 'Marker', MARKER, 'MarkerFaceColor', colours, MaximumNumPoints=1);
         hiddenLines{n} = animatedline('Color', colours);
     end
@@ -93,7 +97,7 @@ outputLayer = LIFLayer(OUTPUT_NEURONS, V_THRESHOLD, V_RESET, V_INFINITY, REFRACT
 outputPoints{OUTPUT_NEURONS,1} = [];
 outputLines{OUTPUT_NEURONS,1} = [];
 for n=1:OUTPUT_NEURONS
-    colours = COLOURS{mod(n, length(COLOURS))+1}/2;
+    colours = neuronColours(n, colourOffset);
     outputPoints{n} = animatedline('Color', colours, 'Marker', MARKER, 'MarkerFaceColor', colours, MaximumNumPoints=1);
     outputLines{n} = animatedline('Color', colours);
 end
