@@ -3,7 +3,7 @@
 clc;
 clear;
 
-% Constants %%%%%%%%%%%%%%%%%%%%%%%%%
+% Constants %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plot Settings
 COLOURS =  {[0      0.4470 0.7410];
             [0.8500 0.3250 0.0980];
@@ -18,20 +18,19 @@ TIMESTEP            = 0.1;
 MARKER              = 'o';
 
 % Neuron Properties (to use defaults, define the layers without these settings).
-REFRACTORY_PERIOD   =  50;  % Period the neuron cannot fire another spike.
+REFRACTORY_PERIOD   =  5;  % Period the neuron cannot fire another spike.
 V_THRESHOLD         =  20;  % Spiking threshold.
 V_INFINITY          =  25;  % Upper bound on neuron voltage.
 V_RESET             = -70;  % Offset. Unused in calculations (to simplify things), but included because neurons normally operate around -70mV.
 
-% Layer Properties
-INPUT_NEURONS       = 2;
+% Layer Properties (set to 0 to disable)
+INPUT_NEURONS       = 1;
 OUTPUT_NEURONS      = 1;
-HIDDEN_NEURONS      = 5;
-HIDDEN_LAYERS       = 1;
+HIDDEN_NEURONS      = 3;
+HIDDEN_LAYERS       = 3;
 
-% Input Signals %%%%%%%%%%%%%%%%%%%%%%%%%
+% Input Signals %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 REPEATING_SIGNAL    = false;    % Determines if the signal should be repeated after ending or not.
-MAX_INPUTS          = 1;        % We could theoretically have more than one signal source. For now we'll just use one.
 TIME_RANGE          = [5, 40];  % Should always be two values
 
 % Alternatively, we can define the TIMEKEY as TIMEKEY = [0, 1, 2, 3, etc].
@@ -56,50 +55,60 @@ for i=1:length(SIGNAL) % Define when a given signal generator will be used.
 %     end
 end
 SIGNAL_MAP = containers.Map(TIMEKEY, SIGNAL);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-signalArrows{MAX_INPUTS,1} = [];
-signalPoints{MAX_INPUTS,1} = [];
-signalLines{MAX_INPUTS,1} = [];
-for n=1:MAX_INPUTS
-    signalLines{n} = animatedline('Color', 'r');
-end
+signalArrow = animatedline('Color', 'r', 'Marker', '<', 'MarkerFaceColor', 'r', MaximumNumPoints=1);
+signalPoint = animatedline('Color', 'r', 'Marker', MARKER, 'MarkerFaceColor', 'r', MaximumNumPoints=1);
+signalLine = animatedline('Color', 'r');
+
+% signalArrows{MAX_INPUTS,1} = [];
+% signalPoints{MAX_INPUTS,1} = [];
+% signalLines{MAX_INPUTS,1} = [];
+% for n=1:MAX_INPUTS
+%     signalLines{n} = animatedline('Color', 'r');
+% end
 
 colourOffset = 1;
 neuronColours = @(neuronOffset, layerOffset) COLOURS{mod(neuronOffset, length(COLOURS))+1}/layerOffset;
 
 % Input layers
-inputLayer = LIFLayer(INPUT_NEURONS, V_THRESHOLD, V_RESET, V_INFINITY, REFRACTORY_PERIOD);
-inputPoints{INPUT_NEURONS,1} = [];
-inputLines{INPUT_NEURONS,1} = [];
-for n=1:INPUT_NEURONS
-    colours = neuronColours(n, colourOffset);
-    inputPoints{n} = animatedline('Color', colours, 'Marker', MARKER, 'MarkerFaceColor', colours, MaximumNumPoints=1);
-    inputLines{n} = animatedline('Color', colours);
+if INPUT_NEURONS > 0
+    inputLayer = LIFLayer(TIMESTEP, INPUT_NEURONS, V_THRESHOLD, V_RESET, V_INFINITY, REFRACTORY_PERIOD);
+    inputPoints{INPUT_NEURONS,1} = [];
+    inputLines{INPUT_NEURONS,1} = [];
+    for n=1:INPUT_NEURONS
+        colours = neuronColours(n, colourOffset);
+        inputPoints{n} = animatedline('Color', colours, 'Marker', MARKER, 'MarkerFaceColor', colours, MaximumNumPoints=1);
+        inputLines{n} = animatedline('DisplayName', sprintf('N%d_{input}',n), 'Color', colours);
+    end
 end
 
 % Hidden layers
-hiddenLayers{HIDDEN_LAYERS,1} = [];
-hiddenPoints{HIDDEN_NEURONS*HIDDEN_LAYERS,1} = [];
-hiddenLines{HIDDEN_NEURONS*HIDDEN_LAYERS,1} = [];
-for i=1:HIDDEN_LAYERS
-    colourOffset = colourOffset + 0.5;
-    hiddenLayers{i} = LIFLayer(HIDDEN_NEURONS, V_THRESHOLD, V_RESET, V_INFINITY, REFRACTORY_PERIOD);
-    for n=1:HIDDEN_NEURONS
-        colours = neuronColours(n, colourOffset);
-        hiddenPoints{n} = animatedline('Color', colours, 'Marker', MARKER, 'MarkerFaceColor', colours, MaximumNumPoints=1);
-        hiddenLines{n} = animatedline('Color', colours);
+if HIDDEN_LAYERS > 0 && HIDDEN_NEURONS > 0
+    hiddenLayers{HIDDEN_LAYERS,1} = [];
+    hiddenPoints{HIDDEN_NEURONS*HIDDEN_LAYERS,1} = [];
+    hiddenLines{HIDDEN_NEURONS*HIDDEN_LAYERS,1} = [];
+    for i=1:HIDDEN_LAYERS
+        colourOffset = colourOffset + 0.1;
+        hiddenLayers{i} = LIFLayer(TIMESTEP, HIDDEN_NEURONS, V_THRESHOLD, V_RESET, V_INFINITY, REFRACTORY_PERIOD);
+        for n=1:HIDDEN_NEURONS
+            colours = neuronColours(n, colourOffset);
+            hiddenPoints{n} = animatedline('Color', colours, 'Marker', MARKER, 'MarkerFaceColor', colours, MaximumNumPoints=1);
+            hiddenLines{n} = animatedline('DisplayName', sprintf('N%d_{layer %d}', n, i), 'Color', colours);
+        end
     end
 end
 
 % Output layers
-outputLayer = LIFLayer(OUTPUT_NEURONS, V_THRESHOLD, V_RESET, V_INFINITY, REFRACTORY_PERIOD);
-outputPoints{OUTPUT_NEURONS,1} = [];
-outputLines{OUTPUT_NEURONS,1} = [];
-for n=1:OUTPUT_NEURONS
-    colours = neuronColours(n, colourOffset);
-    outputPoints{n} = animatedline('Color', colours, 'Marker', MARKER, 'MarkerFaceColor', colours, MaximumNumPoints=1);
-    outputLines{n} = animatedline('Color', colours);
+if OUTPUT_NEURONS > 0
+    outputLayer = LIFLayer(TIMESTEP, OUTPUT_NEURONS, V_THRESHOLD, V_RESET, V_INFINITY, REFRACTORY_PERIOD);
+    outputPoints{OUTPUT_NEURONS,1} = [];
+    outputLines{OUTPUT_NEURONS,1} = [];
+    for n=1:OUTPUT_NEURONS
+        colours = neuronColours(n, colourOffset);
+        outputPoints{n} = animatedline('Color', colours, 'Marker', MARKER, 'MarkerFaceColor', colours, MaximumNumPoints=1);
+        outputLines{n} = animatedline('DisplayName', sprintf('N%d_{output}',n), 'Color', colours);
+    end
 end
 
 % Plot
@@ -116,13 +125,22 @@ xline(TMAX, '-');
 screen = get(0,'ScreenSize');
 set(gcf, 'Position', [floor(screen(3)/4), floor(screen(4)/3), 900, 500], 'Name', 'INFO48874 - Spiking Neuron Simulation');
 
-% Simulation Loop
-previousTexts{MAX_INPUTS,1} = [];
-for n=1:MAX_INPUTS
-    signal_generator = SIGNAL_MAP(TIMEKEY(n));
-    previousTexts{n} = text(0, signal_generator(0), '\t V_{signal-in}');
-    delete(previousTexts{n});
+% Legend %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if OUTPUT_NEURONS > 0 && HIDDEN_LAYERS > 0 && HIDDEN_NEURONS > 0
+    lgd = legend([inputLines{:}, hiddenLines{:}, outputLines{:}]);
+elseif HIDDEN_LAYERS > 0 && HIDDEN_NEURONS > 0
+    lgd = legend([inputLines{:}, hiddenLines{:}]);
+else
+    lgd = legend([inputLines{:}]);
 end
+
+lgd.Location = 'northeastoutside';
+title(lgd, 'Neurons');
+
+% Simulation Loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+signal_generator = SIGNAL_MAP(TIMEKEY(n));
+previousText = text(0, signal_generator(0), '\t V_{signal-in}');
+delete(previousText);
 for time = 1:TIMESTEP:TMAX
     % Input Signals
     timekey = time;
@@ -141,42 +159,44 @@ for time = 1:TIMESTEP:TMAX
     
     % Plot Sensor Inputs
     offsetSignal = inputSignal+V_RESET;
-    for n=1:length(offsetSignal)
-        signalArrows{n} = animatedline('Color', 'r', 'Marker', '<', 'MarkerFaceColor', 'r', MaximumNumPoints=1);
-        signalPoints{n} = animatedline('Color', 'r', 'Marker', MARKER, 'MarkerFaceColor', 'r', MaximumNumPoints=1);
-        addpoints(signalArrows{n}, TMAX, offsetSignal(n));
-        addpoints(signalPoints{n}, time, offsetSignal(n));
-        addpoints(signalLines{n}, time, offsetSignal(n));
-        previousTexts{n} = text(TMAX, offsetSignal(n), sprintf('\t V_{signal-in} = %.2f',offsetSignal(n)));
-    end
+    addpoints(signalArrow, TMAX, offsetSignal);
+    addpoints(signalPoint, time, offsetSignal);
+    addpoints(signalLine, time, offsetSignal);
+    previousText = text(TMAX, offsetSignal, sprintf('\t V_{signal-in} = %.2f',offsetSignal));
     
     % Main Simulation %%%%%%%%%%%%%%%%%%%%%%%%%
     % Input Layer
-    inputLayer.integrate(inputSignal);
-    for n=1:inputLayer.SIZE
-        addpoints(inputPoints{n}, time, inputLayer.Outputs(n));
-        addpoints(inputLines{n}, time, inputLayer.Outputs(n));
+    if INPUT_NEURONS > 0
+        inputLayer.integrate(inputSignal);
+        for n=1:inputLayer.SIZE
+            addpoints(inputPoints{n}, time, inputLayer.Outputs(n));
+            addpoints(inputLines{n}, time, inputLayer.Outputs(n));
+        end
     end
     
     % Hidden Layers
-    hiddenLayers{1}.integrate(inputLayer.Outputs-V_RESET); % Subtract V_RESET here because it messes up calculations otherwise
-    for n=1:hiddenLayers{1}.SIZE
-        addpoints(hiddenPoints{n}, time, hiddenLayers{1}.Outputs(n));
-        addpoints(hiddenLines{n}, time, hiddenLayers{1}.Outputs(n));
-    end
-    for i=2:HIDDEN_LAYERS
-        hiddenLayers{i}.integrate(hiddenLayers{i-1}.Outputs-V_RESET);
-        for n=1:hiddenLayers{i}.SIZE
-            addpoints(hiddenPoints{n}, time, hiddenLayers{i}.Outputs(n));
-            addpoints(hiddenLines{n}, time, hiddenLayers{i}.Outputs(n));
+    if HIDDEN_LAYERS > 0 && HIDDEN_NEURONS > 0
+        hiddenLayers{1}.integrate(inputLayer.Outputs-V_RESET); % Subtract V_RESET here because it messes up calculations otherwise
+        for n=1:hiddenLayers{1}.SIZE
+            addpoints(hiddenPoints{n}, time, hiddenLayers{1}.Outputs(n));
+            addpoints(hiddenLines{n}, time, hiddenLayers{1}.Outputs(n));
+        end
+        for i=2:HIDDEN_LAYERS
+            hiddenLayers{i}.integrate(hiddenLayers{i-1}.Outputs-V_RESET);
+            for n=1:hiddenLayers{i}.SIZE
+                addpoints(hiddenPoints{n}, time, hiddenLayers{i}.Outputs(n));
+                addpoints(hiddenLines{n}, time, hiddenLayers{i}.Outputs(n));
+            end
         end
     end
     
     % Output Layer
-    outputLayer.integrate(hiddenLayers{end}.Outputs-V_RESET); % Subtract V_RESET here because it messes up calculations otherwise
-    for n=1:outputLayer.SIZE
-        addpoints(outputPoints{n}, time, outputLayer.Outputs(n));
-        addpoints(outputLines{n}, time, outputLayer.Outputs(n));
+    if OUTPUT_NEURONS > 0 && HIDDEN_LAYERS > 0 && HIDDEN_NEURONS > 0
+        outputLayer.integrate(hiddenLayers{end}.Outputs-V_RESET); % Subtract V_RESET here because it messes up calculations otherwise
+        for n=1:outputLayer.SIZE
+            addpoints(outputPoints{n}, time, outputLayer.Outputs(n));
+            addpoints(outputLines{n}, time, outputLayer.Outputs(n));
+        end
     end
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
@@ -185,9 +205,7 @@ for time = 1:TIMESTEP:TMAX
     
     % Signal Plot Cleanup
     for n=1:length(offsetSignal)
-        delete(signalArrows{n});
-        delete(signalPoints{n});
-        delete(previousTexts{n});
-        signalPoints{n} = animatedline('Color', 'r', 'Marker', 'x', 'MarkerFaceColor', 'r', MaximumNumPoints=1);
+        delete(previousText);
     end
 end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

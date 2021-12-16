@@ -3,6 +3,7 @@
 classdef LIFNeuron < handle
     properties
         % Constants %%%%%%%%%%%%%%%%%
+        TIMESTEP{}          % The timestep (in ms) used for the neuron's refractory period
         V_RESET{}           % Resting potential; note that this acts only as an offset
         V_INFINITY{}        % Voltage approaches this value but never reaches it
         V_THRESHOLD{}       % Voltage reset threshold
@@ -15,8 +16,10 @@ classdef LIFNeuron < handle
     end
     methods
         % Initialization
-        function neuron = LIFNeuron(v_threshold, v_reset, v_infinity, refractory)
+        function neuron = LIFNeuron(timestep, v_threshold, v_reset, v_infinity, refractory)
             % Constants
+            neuron.TIMESTEP = timestep;             % ms; Note that Timestep must be specified on initialization
+            
             if ~exist('refractory', 'var')
                 refractory = 10;                    % ms
             end
@@ -52,7 +55,7 @@ classdef LIFNeuron < handle
             end
             
             if neuron.Refractory > 0
-                neuron.Refractory = neuron.Refractory - 1;
+                neuron.Refractory = neuron.Refractory - neuron.TIMESTEP;
             else
                 neuron.Voltage = neuron.Voltage + sum(inputs);
             end

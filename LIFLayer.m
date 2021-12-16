@@ -13,7 +13,7 @@ classdef LIFLayer < handle
     end
     methods
         % Initialization
-        function layer = LIFLayer(neuron_count, v_threshold, v_reset, v_infinity, refractory)
+        function layer = LIFLayer(timestep, neuron_count, v_threshold, v_reset, v_infinity, refractory)            
             if ~exist('neuron_count', 'var')
                 neuron_count = 1;
             end
@@ -36,7 +36,7 @@ classdef LIFLayer < handle
                 v_infinity = v_threshold+1; %mV
             end
             for i=1:layer.SIZE
-                layer.Neurons{i} = LIFNeuron(v_threshold, v_reset, v_infinity, refractory);
+                layer.Neurons{i} = LIFNeuron(timestep, v_threshold, v_reset, v_infinity, refractory);
             end
             
             % Define offsets since V_RESET isn't used for calculations (it
@@ -57,7 +57,7 @@ classdef LIFLayer < handle
                 neuralInputs = neuralInputs .* layer.SignalStrengths{i};
                 
                 if layer.Neurons{i}.Refractory > 0 % Weaken Signal
-                    layer.SignalStrengths{i} = layer.SignalStrengths{i} - (layer.SignalStrengths{i} ./ (1+neuralInputs))/layer.Neurons{i}.Refractory;
+                    layer.SignalStrengths{i} = layer.SignalStrengths{i} ./ (((1+neuralInputs))/(layer.Neurons{i}.Refractory));
                 else % Strengthen Signal
                     layer.SignalStrengths{i} = layer.SignalStrengths{i} .^ neuralInputs;
                 end
