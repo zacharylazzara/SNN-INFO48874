@@ -54,7 +54,7 @@ classdef LIFNeuron < handle
             
             neuron.Voltage = neuron.Voltage - (neuron.Voltage/neuron.V_INFINITY);
             
-            if neuron.Voltage >= neuron.V_INFINITY
+            if neuron.Voltage >= neuron.V_INFINITY % This isn't ideal, but will do for now.
                neuron.Voltage = neuron.V_INFINITY-eps; % Since voltage should never reach V_INFINITY we subtract epsilon
             end
             if neuron.Voltage >= neuron.V_THRESHOLD

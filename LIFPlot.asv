@@ -38,12 +38,12 @@ for n=1:INPUT_NEURONS
 end
 
 % Hidden layers
-hiddenLayers{HIDDEN_LAYERS,1} = [];
-hiddenLines{HIDDEN_NEURONS*HIDDEN_LAYERS,1} = [];
+layers{HIDDEN_LAYERS,1} = [];
+lines{HIDDEN_NEURONS*HIDDEN_LAYERS,1} = [];
 for i=1:HIDDEN_LAYERS
-    hiddenLayers{i} = LIFLayer(HIDDEN_NEURONS, V_THRESHOLD, V_RESET, V_INFINITY, REFRACTORY_PERIOD);
+    layers{i} = LIFLayer(HIDDEN_NEURONS, V_THRESHOLD, V_RESET, V_INFINITY, REFRACTORY_PERIOD);
     for n=1:HIDDEN_NEURONS
-        hiddenLines{n} = animatedline('Color', COLOURS{mod(n, length(COLOURS))+1});
+        lines{n} = animatedline('Color', COLOURS{mod(n, length(COLOURS))+1});
     end
 end
 
@@ -63,6 +63,11 @@ axis([0 TMAX (inputLayer.V_RESET-padding) (inputLayer.V_INFINITY+padding)]);
 yline(inputLayer.V_THRESHOLD, '--', 'V_{th}');
 yline(inputLayer.V_INFINITY, '--', 'V_\infty');
 yline(inputLayer.V_RESET, '--', 'V_{reset}');
+lgd = legend('Location', 'northeastoutside');
+lgd.Title.String = "Neural Spikes";
+lgd.NumColumns = INPUT_NEURONS + OUTPUT_NEURONS ;
+lgd.Orientation = "vertical";
+
 
 % Simulation Loop
 for time = 1:TIMESTEP:TMAX
@@ -84,19 +89,19 @@ for time = 1:TIMESTEP:TMAX
     end
     
     % Hidden Layers
-    hiddenLayers{1}.integrate(inputLayer.Outputs-V_RESET); % Subtract V_RESET here because it messes up calculations otherwise
-    for n=1:hiddenLayers{1}.SIZE
-        addpoints(hiddenLines{n}, time, hiddenLayers{1}.Outputs(n));
+    layers{1}.integrate(inputLayer.Outputs-V_RESET); % Subtract V_RESET here because it messes up calculations otherwise
+    for n=1:layers{1}.SIZE
+        addpoints(lines{n}, time, layers{1}.Outputs(n));
     end
     for i=2:HIDDEN_LAYERS
-        hiddenLayers{i}.integrate(hiddenLayers{i-1}.Outputs-V_RESET);
-        for n=1:hiddenLayers{i}.SIZE
-            addpoints(hiddenLines{n}, time, hiddenLayers{i}.Outputs(n));
+        layers{i}.integrate(layers{i-1}.Outputs-V_RESET);
+        for n=1:layers{i}.SIZE
+            addpoints(lines{n}, time, layers{i}.Outputs(n));
         end
     end
     
     % Output Layer
-    outputLayer.integrate(hiddenLayers{end}.Outputs-V_RESET); % Subtract V_RESET here because it messes up calculations otherwise
+    outputLayer.integrate(layers{end}.Outputs-V_RESET); % Subtract V_RESET here because it messes up calculations otherwise
     for n=1:outputLayer.SIZE
         addpoints(outputLines{n}, time, outputLayer.Outputs(n));
     end
