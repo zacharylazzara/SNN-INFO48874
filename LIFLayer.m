@@ -66,5 +66,9 @@ classdef LIFLayer < handle
             end
             outputs = layer.Outputs;
         end
+        
+        function outputs = normalized(layer)
+            outputs = ((layer.Outputs-layer.V_RESET) / (layer.V_INFINITY-layer.V_RESET));
+        end
     end
 end

@@ -72,6 +72,10 @@ classdef LIFNeuron < handle
             output = neuron.Voltage;
         end
         
+        function outputs = normalized(neuron)
+            outputs = neuron.Voltage / neuron.V_INFINITY;
+        end
+        
         function d = v_data(neuron, index, inputs) % y-axis translated by V_RESET
             if exist('inputs', 'var')
                 neuron.integrate(inputs);
