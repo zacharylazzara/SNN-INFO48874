@@ -141,6 +141,24 @@ title(lgd, 'Neurons');
 signal_generator = SIGNAL_MAP(TIMEKEY(n));
 previousText = text(0, signal_generator(0), '\t V_{signal-in}');
 delete(previousText);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% DRAW NEURONS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+neu = drawNeurons();
+connectHiddenLayers();
+connectInputOutputLayes();
+
+%Set the dormant color for the neurons
+for i= 1:29
+    set(neu(i), 'FaceColor', [0 0.5 0.5]);
+    axis equal;
+end
+
+%Pause to see the neurons off
+pause(0.5);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 for time = 1:TIMESTEP:TMAX
     % Input Signals
     timekey = time;
@@ -158,34 +176,76 @@ for time = 1:TIMESTEP:TMAX
     end
     
     % Plot Sensor Inputs
-    offsetSignal = inputSignal+V_RESET;
-    addpoints(signalArrow, TMAX, offsetSignal);
-    addpoints(signalPoint, time, offsetSignal);
-    addpoints(signalLine, time, offsetSignal);
+    %offsetSignal = inputSignal+V_RESET;
+    %addpoints(signalArrow, TMAX, offsetSignal);
+    %addpoints(signalPoint, time, offsetSignal);
+    %addpoints(signalLine, time, offsetSignal);
     previousText = text(TMAX, offsetSignal, sprintf('\t V_{signal-in} = %.2f',offsetSignal));
     
     % Main Simulation %%%%%%%%%%%%%%%%%%%%%%%%%
     % Input Layer
     if INPUT_NEURONS > 0
         inputLayer.integrate(inputSignal);
+%%%%%%%%%%%%%%%%%%%%%%%%%  Updating input layer  %%%%%%%%%%%%%%%%%%%%%%%%%%%
+        set(neu(1), 'FaceColor', [inputLayer.normalized() 0.5 0.5]);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
         for n=1:inputLayer.SIZE
-            addpoints(inputPoints{n}, time, inputLayer.Outputs(n));
-            addpoints(inputLines{n}, time, inputLayer.Outputs(n));
+            %addpoints(inputPoints{n}, time, inputLayer.Outputs(n));
+            %addpoints(inputLines{n}, time, inputLayer.Outputs(n));
         end
     end
     
     % Hidden Layers
     if HIDDEN_LAYERS > 0 && HIDDEN_NEURONS > 0
         hiddenLayers{1}.integrate(inputLayer.Outputs-V_RESET); % Subtract V_RESET here because it messes up calculations otherwise
+       
+%%%%%%%%%%%%%%%%%%%%%%%  Updating hidden layers  %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Updating layer 1
+        neu_col = hiddenLayers{1}.normalized()
+        set(neu(2), 'FaceColor', [neu_col(1) 0.5 0.5]);
+        set(neu(5), 'FaceColor', [neu_col(2) 0.5 0.5]);
+        set(neu(8), 'FaceColor', [neu_col(3) 0.5 0.5]);
+        set(neu(11), 'FaceColor', [neu_col(1) 0.5 0.5]);
+        set(neu(14), 'FaceColor', [neu_col(2) 0.5 0.5]);
+        set(neu(17), 'FaceColor', [neu_col(3) 0.5 0.5]);
+        set(neu(20), 'FaceColor', [neu_col(1) 0.5 0.5]);
+        set(neu(23), 'FaceColor', [neu_col(2) 0.5 0.5]);
+        set(neu(26), 'FaceColor', [neu_col(3) 0.5 0.5]);
+%Updating layer 2
+        hiddenLayers{2}.integrate(inputLayer.Outputs-V_RESET);
+         neu_col2 = hiddenLayers{2}.normalized()
+         set(neu(3), 'FaceColor', [neu_col2(1) 0.5 0.5]);
+         set(neu(6), 'FaceColor', [neu_col2(2) 0.5 0.5]);
+         set(neu(9), 'FaceColor', [neu_col2(3) 0.5 0.5]);
+         set(neu(12), 'FaceColor', [neu_col2(1) 0.5 0.5]);
+         set(neu(15), 'FaceColor', [neu_col2(2) 0.5 0.5]);
+         set(neu(18), 'FaceColor', [neu_col2(3) 0.5 0.5]);
+         set(neu(21), 'FaceColor', [neu_col2(1) 0.5 0.5]);
+         set(neu(24), 'FaceColor', [neu_col2(2) 0.5 0.5]);
+         set(neu(27), 'FaceColor', [neu_col2(3) 0.5 0.5]);
+%Updating layer 3
+          hiddenLayers{3}.integrate(inputLayer.Outputs-V_RESET);
+         neu_col3 = hiddenLayers{3}.normalized()
+         set(neu(4), 'FaceColor', [neu_col3(1) 0.5 0.5]);
+         set(neu(7), 'FaceColor', [neu_col3(2) 0.5 0.5]);
+         set(neu(10), 'FaceColor', [neu_col3(3) 0.5 0.5]);
+         set(neu(13), 'FaceColor', [neu_col3(1) 0.5 0.5]);
+         set(neu(16), 'FaceColor', [neu_col3(2) 0.5 0.5]);
+         set(neu(19), 'FaceColor', [neu_col3(3) 0.5 0.5]);
+         set(neu(22), 'FaceColor', [neu_col3(1) 0.5 0.5]);
+         set(neu(25), 'FaceColor', [neu_col3(2) 0.5 0.5]);
+         set(neu(28), 'FaceColor', [neu_col3(3) 0.5 0.5]);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
+        
         for n=1:hiddenLayers{1}.SIZE
-            addpoints(hiddenPoints{n}, time, hiddenLayers{1}.Outputs(n));
-            addpoints(hiddenLines{n}, time, hiddenLayers{1}.Outputs(n));
+            %addpoints(hiddenPoints{n}, time, hiddenLayers{1}.Outputs(n));
+            %addpoints(hiddenLines{n}, time, hiddenLayers{1}.Outputs(n));
         end
         for i=2:HIDDEN_LAYERS
             hiddenLayers{i}.integrate(hiddenLayers{i-1}.Outputs-V_RESET);
             for n=1:hiddenLayers{i}.SIZE
-                addpoints(hiddenPoints{n}, time, hiddenLayers{i}.Outputs(n));
-                addpoints(hiddenLines{n}, time, hiddenLayers{i}.Outputs(n));
+                %addpoints(hiddenPoints{n}, time, hiddenLayers{i}.Outputs(n));
+                %addpoints(hiddenLines{n}, time, hiddenLayers{i}.Outputs(n));
             end
         end
     end
@@ -193,9 +253,14 @@ for time = 1:TIMESTEP:TMAX
     % Output Layer
     if OUTPUT_NEURONS > 0 && HIDDEN_LAYERS > 0 && HIDDEN_NEURONS > 0
         outputLayer.integrate(hiddenLayers{end}.Outputs-V_RESET); % Subtract V_RESET here because it messes up calculations otherwise
+        
+%%%%%%%%%%%%%%%%%%%%%%%%%  Updating output layer  %%%%%%%%%%%%%%%%%%%%%%%%%%
+        set(neu(29), 'FaceColor', [outputLayer.normalized() 0.5 0.5]);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
+        
         for n=1:outputLayer.SIZE
-            addpoints(outputPoints{n}, time, outputLayer.Outputs(n));
-            addpoints(outputLines{n}, time, outputLayer.Outputs(n));
+            %addpoints(outputPoints{n}, time, outputLayer.Outputs(n));
+            %addpoints(outputLines{n}, time, outputLayer.Outputs(n));
         end
     end
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
