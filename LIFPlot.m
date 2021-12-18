@@ -209,3 +209,68 @@ for time = 1:TIMESTEP:TMAX
     end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%   VISUALIZATION   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Draw a 3x3x3 Neuron Grid with 27 neurons
+function array = drawNeurons()
+    %Give x,y,z sphere values [0,0,1]
+    [x,y,z] = sphere;
+    %Space between neurons is 4 units * 2
+    position = [0, 2, 4]
+    %Neurons array
+    array = zeros(29,1);
+    %Counter for neuron array index
+    i = 1;
+        
+    for x_l = 1:3
+        for y_l = 1:3
+            for z_l = 1:3
+                i = i + 1;
+                array(i) = surf(x + (position(x_l) * 2),y + (position(y_l) * 2),z + (position(z_l) * 2));
+                hold on
+            end
+        end
+    end
+    
+    %Input and output layer
+    array(1) = surf(x + 4,y + 4,z -4);
+    array(29) = surf(x + 4,y + 4,z + 12);
+end
+
+%Connect the hidden layers fully
+function connectHiddenLayers()
+    position = [0, 2, 4]
+    layer2 = [3 7]
+    layer1 = [1 4]
+    %Once for each layer
+    for lay_z = 1:2
+        %For all three coordinated from position. The layer x and y creates
+        %the connection for each neuron
+        for lay_x = 1:3
+            for lay_y = 1:3
+                for n_x = 1:3
+                    for n_y = 1:3
+                        line([(position(lay_x) * 2) (position(n_x) * 2)],[(position(lay_y) * 2) (position(n_y) * 2)],[layer2(lay_z) layer1(lay_z)]);
+                    end
+                end
+            end
+        end
+    end
+end
+
+%Connect inpu and ouput neuron to the 1st and last hidden layer
+function connectInputOutputLayes()
+    %Constant definitions
+    lay1_z = [11 -3]
+    lay2_z = [9 -1]
+    position = [0, 2, 4]
+    %Draw the line connections between neurons
+    for layer = 1:2
+        for n_y = 1:3
+            for n_x = 1:3
+                line([4 (position(n_x) * 2)],[4 (position(n_y) * 2)],[lay1_z(layer) lay2_z(layer)]);
+            end
+        end
+    end
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
