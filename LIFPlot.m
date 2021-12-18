@@ -386,12 +386,12 @@ function array = drawNeurons()
     %Neurons array
     array = zeros(29,1);
     %Counter for neuron array index
-    i = 1;
+    i = 29;
         
     for x_l = 1:3
         for y_l = 1:3
             for z_l = 1:3
-                i = i + 1;
+                i = i - 1;
                 array(i) = surf(x + (position(x_l) * 2),y + (position(y_l) * 2),z + (position(z_l) * 2));
                 hold on;
             end
@@ -399,8 +399,8 @@ function array = drawNeurons()
     end
     
     %Input and output layer
-    array(1) = surf(x + 4,y + 4,z -4);
-    array(29) = surf(x + 4,y + 4,z + 12);
+    array(29) = surf(x + 4,y + 4,z -4);
+    array(1) = surf(x + 4,y + 4,z + 12);
 end
 
 %Connect the hidden layers fully
