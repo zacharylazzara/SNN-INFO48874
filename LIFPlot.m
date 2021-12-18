@@ -55,17 +55,17 @@ for t=min(TIME_RANGE):max(TIME_RANGE)
 end
 
 % Signal generators
-SIG1_GEN = @(t) 1+sin(pi*t)/5; 
-% SIG2_GEN = @(t) 2+sin(pi*t);
+SIG1_GEN = @(t) 1+sin(pi*t); 
+SIG2_GEN = @(t) 0.5;
 
 SIGNAL{length(TIMEKEY),1} = [];
 for i=1:length(SIGNAL) % Define when a given signal generator will be used.
-    SIGNAL{i} = SIG1_GEN;
-%     if i < 10 || i > 20
-%         SIGNAL{i} = SIG1_GEN;
-%     else
-%         SIGNAL{i} = SIG2_GEN;
-%     end
+%     SIGNAL{i} = SIG1_GEN;
+    if i < 25
+        SIGNAL{i} = SIG1_GEN;
+    else
+        SIGNAL{i} = SIG2_GEN;
+    end
 end
 SIGNAL_MAP = containers.Map(TIMEKEY, SIGNAL);
 MAIN_AXIS_RANGE = [0 TMAX (V_RESET-PADDING) (V_INFINITY+PADDING)];
@@ -337,12 +337,11 @@ for time = 1:TIMESTEP:TMAX
         for i=2:HIDDEN_LAYERS
             hiddenLayers{i}.integrate(hiddenLayers{i-1}.Outputs-V_RESET);
             
+            nIndex = nIndex + 1;
             neu_col = hiddenLayers{i}.normalized();
             for colIndex=1:3
                 set(neu(nIndex+1), 'FaceColor', [neu_col(colIndex) 0.5 0.5]);
             end
-            
-            nIndex = nIndex + 1;
             
             for n=1:hiddenLayers{i}.SIZE
                 addpoints(hiddenPoints{i,n}, time, hiddenLayers{i}.Outputs(n));
