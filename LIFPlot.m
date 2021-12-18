@@ -110,7 +110,7 @@ if INPUT_NEURONS > 0
     
     title(inputPlot, 'Input Layer Neuron(s)');
     xlabel(inputPlot, 'Time (ms)');
-    ylabel(inputPlot, 'Neuron Voltage (mV)');
+    ylabel(inputPlot, 'mV');
     yline(inputPlot, inputLayer.V_THRESHOLD, '--', 'V_{th}');
     yline(inputPlot, inputLayer.V_INFINITY, '--', 'V_\infty');
     yline(inputPlot, inputLayer.V_RESET, '--', 'V_{reset}');
@@ -131,8 +131,8 @@ end
 if HIDDEN_LAYERS > 0 && HIDDEN_NEURONS > 0
     hiddenPlots{HIDDEN_LAYERS,1} = [];
     hiddenLayers{HIDDEN_LAYERS,1} = [];
-    hiddenPoints{HIDDEN_NEURONS*HIDDEN_LAYERS,1} = [];
-    hiddenLines{HIDDEN_NEURONS*HIDDEN_LAYERS,1} = [];
+    hiddenPoints{HIDDEN_LAYERS,HIDDEN_NEURONS} = [];
+    hiddenLines{HIDDEN_LAYERS,HIDDEN_NEURONS} = [];
     for i=1:HIDDEN_LAYERS
 %         colourOffset = colourOffset + 0.1; % No longer need to offset the colour since we've put the layers on separate subplots
         hiddenLayers{i} = LIFLayer(TIMESTEP, HIDDEN_NEURONS, V_THRESHOLD, V_RESET, V_INFINITY, REFRACTORY_PERIOD);
@@ -144,7 +144,7 @@ if HIDDEN_LAYERS > 0 && HIDDEN_NEURONS > 0
         
         title(hiddenPlots{i}, sprintf('Hidden Layer %d Neuron(s)', i));
         xlabel(hiddenPlots{i}, 'Time (ms)');
-        ylabel(hiddenPlots{i}, 'Neuron Voltage (mV)');
+        ylabel(hiddenPlots{i}, 'mV');
         yline(hiddenPlots{i}, hiddenLayers{i}.V_THRESHOLD, '--', 'V_{th}');
         yline(hiddenPlots{i}, hiddenLayers{i}.V_INFINITY, '--', 'V_\infty');
         yline(hiddenPlots{i}, hiddenLayers{i}.V_RESET, '--', 'V_{reset}');
@@ -153,8 +153,8 @@ if HIDDEN_LAYERS > 0 && HIDDEN_NEURONS > 0
         axis(hiddenPlots{i}, [0 TMAX (hiddenLayers{i}.V_RESET-PADDING) (hiddenLayers{i}.V_INFINITY+PADDING)]);
         for n=1:HIDDEN_NEURONS
             colours = neuronColours(n, colourOffset);
-            hiddenPoints{n} = animatedline(hiddenPlots{i}, 'Color', colours, 'Marker', MARKER, 'MarkerFaceColor', colours, MaximumNumPoints=1);
-            hiddenLines{n} = animatedline(hiddenPlots{i}, 'DisplayName', sprintf('N%d_{layer %d}', n, i), 'Color', colours);
+            hiddenPoints{i,n} = animatedline(hiddenPlots{i}, 'Color', colours, 'Marker', MARKER, 'MarkerFaceColor', colours, MaximumNumPoints=1);
+            hiddenLines{i,n} = animatedline(hiddenPlots{i}, 'DisplayName', sprintf('N%d_{layer %d}', n, i), 'Color', colours);
         end
     end
 end
@@ -172,7 +172,7 @@ if OUTPUT_NEURONS > 0
     
     title(outputPlot, 'Output Layer Neuron(s)');
     xlabel(outputPlot, 'Time (ms)');
-    ylabel(outputPlot, 'Neuron Voltage (mV)');
+    ylabel(outputPlot, 'mV');
     yline(outputPlot, outputLayer.V_THRESHOLD, '--', 'V_{th}');
     yline(outputPlot, outputLayer.V_INFINITY, '--', 'V_\infty');
     yline(outputPlot, outputLayer.V_RESET, '--', 'V_{reset}');
@@ -324,8 +324,8 @@ for time = 1:TIMESTEP:TMAX
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
         
         for n=1:hiddenLayers{1}.SIZE
-            addpoints(hiddenPoints{n}, time, hiddenLayers{1}.Outputs(n));
-            addpoints(hiddenLines{n}, time, hiddenLayers{1}.Outputs(n));
+            addpoints(hiddenPoints{1,n}, time, hiddenLayers{1}.Outputs(n));
+            addpoints(hiddenLines{1,n}, time, hiddenLayers{1}.Outputs(n));
         end
         
         nIndex = [2, 5, 8, 11, 14, 17, 20, 23, 26];
@@ -345,8 +345,8 @@ for time = 1:TIMESTEP:TMAX
             nIndex = nIndex + 1;
             
             for n=1:hiddenLayers{i}.SIZE
-                addpoints(hiddenPoints{n}, time, hiddenLayers{i}.Outputs(n));
-                addpoints(hiddenLines{n}, time, hiddenLayers{i}.Outputs(n));
+                addpoints(hiddenPoints{i,n}, time, hiddenLayers{i}.Outputs(n));
+                addpoints(hiddenLines{i,n}, time, hiddenLayers{i}.Outputs(n));
             end
         end
     end
