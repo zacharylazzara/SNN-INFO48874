@@ -142,6 +142,7 @@ signal_generator = SIGNAL_MAP(TIMEKEY(n));
 previousText = text(0, signal_generator(0), '\t V_{signal-in}');
 delete(previousText);
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% DRAW NEURONS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 neu = drawNeurons();
@@ -155,7 +156,7 @@ for i= 1:29
 end
 
 %Pause to see the neurons off
-pause(0.5);
+pause(1);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -176,29 +177,29 @@ for time = 1:TIMESTEP:TMAX
     end
     
     % Plot Sensor Inputs
-    %offsetSignal = inputSignal+V_RESET;
+    offsetSignal = inputSignal+V_RESET;
     %addpoints(signalArrow, TMAX, offsetSignal);
     %addpoints(signalPoint, time, offsetSignal);
     %addpoints(signalLine, time, offsetSignal);
     previousText = text(TMAX, offsetSignal, sprintf('\t V_{signal-in} = %.2f',offsetSignal));
-    
+
     % Main Simulation %%%%%%%%%%%%%%%%%%%%%%%%%
     % Input Layer
     if INPUT_NEURONS > 0
         inputLayer.integrate(inputSignal);
 %%%%%%%%%%%%%%%%%%%%%%%%%  Updating input layer  %%%%%%%%%%%%%%%%%%%%%%%%%%%
         set(neu(1), 'FaceColor', [inputLayer.normalized() 0.5 0.5]);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
         for n=1:inputLayer.SIZE
-            %addpoints(inputPoints{n}, time, inputLayer.Outputs(n));
-            %addpoints(inputLines{n}, time, inputLayer.Outputs(n));
+           %addpoints(inputPoints{n}, time, inputLayer.Outputs(n));
+           %addpoints(inputLines{n}, time, inputLayer.Outputs(n));
         end
     end
     
     % Hidden Layers
     if HIDDEN_LAYERS > 0 && HIDDEN_NEURONS > 0
         hiddenLayers{1}.integrate(inputLayer.Outputs-V_RESET); % Subtract V_RESET here because it messes up calculations otherwise
-       
+ 
 %%%%%%%%%%%%%%%%%%%%%%%  Updating hidden layers  %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Updating layer 1
         neu_col = hiddenLayers{1}.normalized()
@@ -235,17 +236,18 @@ for time = 1:TIMESTEP:TMAX
          set(neu(22), 'FaceColor', [neu_col3(1) 0.5 0.5]);
          set(neu(25), 'FaceColor', [neu_col3(2) 0.5 0.5]);
          set(neu(28), 'FaceColor', [neu_col3(3) 0.5 0.5]);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
         
         for n=1:hiddenLayers{1}.SIZE
+            %disp(hiddenLayers{1}.normalized().SIZE);
             %addpoints(hiddenPoints{n}, time, hiddenLayers{1}.Outputs(n));
             %addpoints(hiddenLines{n}, time, hiddenLayers{1}.Outputs(n));
         end
         for i=2:HIDDEN_LAYERS
             hiddenLayers{i}.integrate(hiddenLayers{i-1}.Outputs-V_RESET);
             for n=1:hiddenLayers{i}.SIZE
-                %addpoints(hiddenPoints{n}, time, hiddenLayers{i}.Outputs(n));
-                %addpoints(hiddenLines{n}, time, hiddenLayers{i}.Outputs(n));
+               %addpoints(hiddenPoints{n}, time, hiddenLayers{i}.Outputs(n));
+               %addpoints(hiddenLines{n}, time, hiddenLayers{i}.Outputs(n));
             end
         end
     end
@@ -253,11 +255,9 @@ for time = 1:TIMESTEP:TMAX
     % Output Layer
     if OUTPUT_NEURONS > 0 && HIDDEN_LAYERS > 0 && HIDDEN_NEURONS > 0
         outputLayer.integrate(hiddenLayers{end}.Outputs-V_RESET); % Subtract V_RESET here because it messes up calculations otherwise
-        
 %%%%%%%%%%%%%%%%%%%%%%%%%  Updating output layer  %%%%%%%%%%%%%%%%%%%%%%%%%%
         set(neu(29), 'FaceColor', [outputLayer.normalized() 0.5 0.5]);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
-        
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         for n=1:outputLayer.SIZE
             %addpoints(outputPoints{n}, time, outputLayer.Outputs(n));
             %addpoints(outputLines{n}, time, outputLayer.Outputs(n));
@@ -275,6 +275,9 @@ for time = 1:TIMESTEP:TMAX
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+
+% Written by Dennis Suarez
 %%%%%%%%%%%%%%%%%%%%%%%%%%%   VISUALIZATION   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Draw a 3x3x3 Neuron Grid with 27 neurons
 function array = drawNeurons()
